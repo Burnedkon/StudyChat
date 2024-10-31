@@ -1,6 +1,9 @@
 let username = null;
 
-// Load posts from local storage
+// Load posts from local storage when the page loads
+window.onload = loadPosts;
+
+// Function to load posts
 function loadPosts() {
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
     const postList = document.getElementById("postList");
@@ -26,14 +29,14 @@ function loadPosts() {
         
         post.comments.forEach(comment => {
             const commentItem = document.createElement("li");
-            commentItem.textContent = comment;
+            commentItem.innerHTML = `<strong>${comment.username}:</strong> ${comment.text}`;
             commentList.appendChild(commentItem);
         });
 
         commentButton.addEventListener("click", () => {
-            const comment = commentInput.value.trim();
-            if (comment) {
-                post.comments.push(comment);
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                post.comments.push({ username: username, text: commentText }); // Store username with comment
                 localStorage.setItem("posts", JSON.stringify(posts));
                 loadPosts(); // Reload posts to refresh comments
             }
@@ -92,3 +95,4 @@ document.getElementById("submitPost").addEventListener("click", function() {
         alert("Please fill in both the title and content.");
     }
 });
+
