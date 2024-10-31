@@ -3,18 +3,18 @@ let username = null;
 // Load posts from local storage when the page loads
 window.onload = loadPosts;
 
+// Function to load posts
 function loadPosts() {
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
     const postList = document.getElementById("postList");
     postList.innerHTML = ''; // Clear the current list
-    posts.forEach((post, postIndex) => { // Add index to each post
+    posts.forEach(post => {
         const postItem = document.createElement("li");
         postItem.innerHTML = `
             <strong>${post.username}: ${post.title}</strong>
             <p>${post.content}</p>
             <p><em>Tags: ${post.tags}</em></p>
             ${post.image ? `<img src="${post.image}" alt="Post Image" style="max-width: 100%; height: auto;">` : ''}
-            <button class="clearCommentsButton">Clear Comments</button> <!-- Clear comments button -->
             <div class="commentSection">
                 <h4>Comments</h4>
                 <ul class="commentList"></ul>
@@ -27,7 +27,6 @@ function loadPosts() {
         const commentInput = postItem.querySelector(".commentInput");
         const commentButton = postItem.querySelector(".commentButton");
         const commentList = postItem.querySelector(".commentList");
-        const clearCommentsButton = postItem.querySelector(".clearCommentsButton"); // Get the clear button
         
         // Display existing comments
         post.comments.forEach(comment => {
@@ -45,13 +44,6 @@ function loadPosts() {
                 localStorage.setItem("posts", JSON.stringify(posts));
                 loadPosts(); // Reload posts to refresh comments
             }
-        });
-
-        // Handle clearing all comments
-        clearCommentsButton.addEventListener("click", () => {
-            post.comments = []; // Clear the comments array
-            localStorage.setItem("posts", JSON.stringify(posts)); // Update local storage
-            loadPosts(); // Reload posts to refresh comments
         });
 
         postList.appendChild(postItem);
