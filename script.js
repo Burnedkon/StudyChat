@@ -37,7 +37,7 @@ function loadPosts() {
         // Handle new comment submission
         commentButton.addEventListener("click", () => {
             const commentText = commentInput.value.trim();
-            if (commentText) {
+            if (commentText && username) { // Ensure username is not null
                 const newComment = { username: username, text: commentText }; // Store username with comment
                 post.comments.push(newComment);
                 localStorage.setItem("posts", JSON.stringify(posts));
