@@ -1,36 +1,7 @@
-// Submit a post
-document.getElementById("submitPost").addEventListener("click", function() {
-    const title = document.getElementById("postTitle").value;
-    const content = document.getElementById("postContent").value;
-    const tags = document.getElementById("postTags").value;
-    const imageInput = document.getElementById("postImage");
+let username = null;
 
-    if (title && content) {
-        const posts = JSON.parse(localStorage.getItem("posts")) || [];
-        const image = imageInput.files[0]; // Get the uploaded file
-
-        const newPost = {
-            username: username,
-            title: title,
-            content: content,
-            tags: tags,
-            comments: [], // Initialize comments array
-            image: image ? URL.createObjectURL(image) : null // Create URL for the image if it exists
-        };
-
-        posts.push(newPost);
-        localStorage.setItem("posts", JSON.stringify(posts));
-        loadPosts(); // Load posts to refresh the display
-
-        // Clear input fields
-        document.getElementById("postTitle").value = '';
-        document.getElementById("postContent").value = '';
-        document.getElementById("postTags").value = '';
-        imageInput.value = ''; // Clear image input
-    } else {
-        alert("Please fill in both the title and content.");
-    }
-});
+// Load posts from local storage when the page loads
+window.onload = loadPosts;
 
 // Function to load posts
 function loadPosts() {
@@ -79,3 +50,59 @@ function loadPosts() {
     });
 }
 
+// Set username
+document.getElementById("setUsername").addEventListener("click", function() {
+    username = document.getElementById("usernameInput").value.trim();
+    if (username) {
+        document.getElementById("userSection").style.display = "none";
+        document.getElementById("postForm").style.display = "block";
+        document.getElementById("logoutButton").style.display = "inline";
+        document.getElementById("usernameInput").value = ''; // Clear input
+        loadPosts(); // Load posts on username set
+    } else {
+        alert("Please enter a valid username.");
+    }
+});
+
+// Logout
+document.getElementById("logoutButton").addEventListener("click", function() {
+    username = null;
+    document.getElementById("userSection").style.display = "block";
+    document.getElementById("postForm").style.display = "none";
+    document.getElementById("logoutButton").style.display = "none";
+    document.getElementById("postList").innerHTML = ''; // Clear posts
+});
+
+// Submit a post
+document.getElementById("submitPost").addEventListener("click", function() {
+    const title = document.getElementById("postTitle").value;
+    const content = document.getElementById("postContent").value;
+    const tags = document.getElementById("postTags").value;
+    const imageInput = document.getElementById("postImage");
+
+    if (title && content) {
+        const posts = JSON.parse(localStorage.getItem("posts")) || [];
+        const image = imageInput.files[0]; // Get the uploaded file
+
+        const newPost = {
+            username: username,
+            title: title,
+            content: content,
+            tags: tags,
+            comments: [], // Initialize comments array
+            image: image ? URL.createObjectURL(image) : null // Create URL for the image if it exists
+        };
+
+        posts.push(newPost);
+        localStorage.setItem("posts", JSON.stringify(posts));
+        loadPosts(); // Load posts to refresh the display
+
+        // Clear input fields
+        document.getElementById("postTitle").value = '';
+        document.getElementById("postContent").value = '';
+        document.getElementById("postTags").value = '';
+        imageInput.value = ''; // Clear image input
+    } else {
+        alert("Please fill in both the title and content.");
+    }
+});
