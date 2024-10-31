@@ -12,12 +12,12 @@ header {
     text-align: center;
 }
 
-main {
-    padding: 20px;
+nav {
+    margin-top: 10px;
 }
 
-#postForm {
-    margin-bottom: 20px;
+main {
+    padding: 20px;
 }
 
 input, textarea {
