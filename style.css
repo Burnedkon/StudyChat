@@ -44,3 +44,17 @@ button:hover {
 #posts {
     margin-top: 20px;
 }
+
+.commentSection {
+    margin-top: 10px;
+}
+
+.commentSection input {
+    width: calc(100% - 80px);
+    display: inline-block;
+}
+
+.commentButton {
+    display: inline-block;
+    margin-left: 10px;
+}
