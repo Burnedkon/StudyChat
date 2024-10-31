@@ -107,3 +107,4 @@ function loadPosts() {
 
 // Load posts on page load
 window.onload = loadPosts;
+
