@@ -1,16 +1,33 @@
 let username = '';
+let profilePicture = '';
+let currentCommunity = '';
 
-// Set username
-document.getElementById("setUsername").addEventListener("click", function() {
+// Set username and profile picture
+document.getElementById("setUsername").addEventListener("click", async function() {
     const usernameInput = document.getElementById("usernameInput").value.trim();
+    const profilePicInput = document.getElementById("profilePictureInput").files[0];
+
     if (usernameInput) {
         username = usernameInput;
+        profilePicture = profilePicInput ? await convertToBase64(profilePicInput) : '';
+
         document.getElementById("userSection").style.display = 'none';
-        document.getElementById("postForm").style.display = 'block';
+        document.getElementById("communityForm").style.display = 'block';
         document.getElementById("logoutButton").style.display = 'inline';
-        loadPosts();
     } else {
         alert("Please enter a username.");
+    }
+});
+
+// Community setup
+document.getElementById("createCommunity").addEventListener("click", function() {
+    const communityName = document.getElementById("communityName").value.trim();
+    if (communityName) {
+        currentCommunity = communityName;
+        document.getElementById("postForm").style.display = 'block';
+        loadPosts();
+    } else {
+        alert("Please enter a community name.");
     }
 });
 
@@ -40,12 +57,14 @@ document.getElementById("submitPost").addEventListener("click", async function()
         }
 
         const newPost = {
-            username: username,
-            title: title,
-            content: content,
-            tags: tags,
+            username,
+            profilePicture,
+            title,
+            content,
+            tags,
             comments: [],
-            image: image
+            image,
+            community: currentCommunity
         };
 
         posts.push(newPost);
@@ -67,51 +86,47 @@ function loadPosts() {
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
     const postList = document.getElementById("postList");
     postList.innerHTML = '';
-    posts.forEach(post => {
-        const postItem = document.createElement("li");
-        postItem.innerHTML = `
-            <strong>${post.username}: ${post.title}</strong>
-            <p>${post.content}</p>
-            <p><em>Tags: ${post.tags}</em></p>
-            ${post.image ? `<img src="${post.image}" alt="Post Image" style="max-width: 100%; height: auto;">` : ''}
-            <button class="clearCommentsButton">Clear Comments</button>
-            <div class="commentSection">
-                <h4>Comments</h4>
-                <ul class="commentList"></ul>
-                <input type="text" class="commentInput" placeholder="Add a comment">
-                <button class="commentButton">Comment</button>
-            </div>
-        `;
-        
-        const commentInput = postItem.querySelector(".commentInput");
-        const commentButton = postItem.querySelector(".commentButton");
-        const commentList = postItem.querySelector(".commentList");
-        const clearCommentsButton = postItem.querySelector(".clearCommentsButton");
-        
-        post.comments.forEach(comment => {
-            const commentItem = document.createElement("li");
-            commentItem.innerHTML = `<strong>${comment.username}:</strong> ${comment.text}`;
-            commentList.appendChild(commentItem);
-        });
 
-        commentButton.addEventListener("click", () => {
-            const commentText = commentInput.value.trim();
-            if (commentText && username) {
-                const newComment = { username: username, text: commentText };
-                post.comments.push(newComment);
-                localStorage.setItem("posts", JSON.stringify(posts));
-                loadPosts();
-            }
-        });
+    posts
+        .filter(post => post.community === currentCommunity)
+        .forEach(post => {
+            const postItem = document.createElement("li");
+            postItem.innerHTML = `
+                <strong>${post.username}</strong>
+                <img src="${post.profilePicture}" alt="Profile Picture" class="profile-picture">
+                <p><strong>${post.title}</strong></p>
+                <p>${post.content}</p>
+                <p><em>Tags: ${post.tags}</em></p>
+                ${post.image ? `<img src="${post.image}" alt="Post Image" class="post-image">` : ''}
+                <div class="commentSection">
+                    <h4>Comments</h4>
+                    <ul class="commentList"></ul>
+                    <input type="text" class="commentInput" placeholder="Add a comment">
+                    <button class="commentButton">Comment</button>
+                </div>
+            `;
 
-        clearCommentsButton.addEventListener("click", () => {
-            post.comments = [];
-            localStorage.setItem("posts", JSON.stringify(posts));
-            loadPosts();
-        });
+            const commentInput = postItem.querySelector(".commentInput");
+            const commentButton = postItem.querySelector(".commentButton");
+            const commentList = postItem.querySelector(".commentList");
 
-        postList.appendChild(postItem);
-    });
+            post.comments.forEach(comment => {
+                const commentItem = document.createElement("li");
+                commentItem.innerHTML = `<strong>${comment.username}:</strong> ${comment.text}`;
+                commentList.appendChild(commentItem);
+            });
+
+            commentButton.addEventListener("click", () => {
+                const commentText = commentInput.value.trim();
+                if (commentText) {
+                    post.comments.push({ username, text: commentText });
+                    localStorage.setItem("posts", JSON.stringify(posts));
+                    loadPosts();
+                }
+            });
+
+            postList.appendChild(postItem);
+        });
 }
 
 window.onload = loadPosts;
