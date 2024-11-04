@@ -1,8 +1,9 @@
-// Initialize Firebase
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, child } from "firebase/database";
+import { getDatabase, ref, set, get, child, onValue } from "firebase/database";
 import { getStorage, ref as storageRef, uploadBytes } from "firebase/storage";
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyC_Pu9M7JlEyu9ZdwC8vvR_RJpvum6Ob_I",
     authDomain: "studychat-ee7e6.firebaseapp.com",
@@ -13,123 +14,162 @@ const firebaseConfig = {
     measurementId: "G-9LL85T6RQ0"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const storage = getStorage(app);
 
-let currentUsername = "";
+let currentUsername = null;
 
-// Set Username
-document.getElementById("setUsername").onclick = function() {
-    const username = document.getElementById("usernameInput").value;
-    const password = document.getElementById("passwordInput").value;
+// Set username and password
+document.getElementById('setUsername').onclick = () => {
+    const username = document.getElementById('usernameInput').value;
+    const password = document.getElementById('passwordInput').value;
 
     if (username && password) {
-        // Store username and password
         set(ref(database, 'users/' + username), {
             password: password
         }).then(() => {
             currentUsername = username;
-            document.getElementById("userSection").style.display = 'none';
-            document.getElementById("postForm").style.display = 'block';
+            document.getElementById('userSection').style.display = 'none';
+            document.getElementById('postForm').style.display = 'block';
             loadPosts();
         }).catch((error) => {
-            console.error("Error creating user: ", error);
+            console.error('Error setting username: ', error);
         });
-    } else {
-        alert("Please enter both username and password.");
     }
 };
 
-// Login User
-document.getElementById("loginButton").onclick = function() {
-    const username = document.getElementById("usernameInput").value;
-    const password = document.getElementById("passwordInput").value;
+// Login functionality
+document.getElementById('loginButton').onclick = () => {
+    const username = document.getElementById('usernameInput').value;
+    const password = document.getElementById('passwordInput').value;
 
-    if (username && password) {
-        get(child(ref(database), 'users/' + username)).then((snapshot) => {
-            if (snapshot.exists()) {
-                const userData = snapshot.val();
-                if (userData.password === password) {
-                    currentUsername = username;
-                    document.getElementById("userSection").style.display = 'none';
-                    document.getElementById("postForm").style.display = 'block';
-                    loadPosts();
-                } else {
-                    alert("Incorrect password.");
-                }
-            } else {
-                alert("User does not exist. Please create an account.");
-            }
+    get(child(ref(database), 'users/' + username)).then((snapshot) => {
+        if (snapshot.exists() && snapshot.val().password === password) {
+            currentUsername = username;
+            document.getElementById('userSection').style.display = 'none';
+            document.getElementById('postForm').style.display = 'block';
+            loadPosts();
+        } else {
+            alert('Invalid username or password');
+        }
+    }).catch((error) => {
+        console.error('Error logging in: ', error);
+    });
+};
+
+// Submit a new post
+document.getElementById('submitPost').onclick = () => {
+    const title = document.getElementById('postTitle').value;
+    const content = document.getElementById('postContent').value;
+    const tags = document.getElementById('postTags').value;
+    const imageFile = document.getElementById('postImage').files[0];
+
+    const postId = Date.now();
+
+    if (imageFile) {
+        const imageRef = storageRef(storage, 'images/' + postId);
+        uploadBytes(imageRef, imageFile).then(() => {
+            const imageUrl = `images/${postId}`;
+            savePost(title, content, tags, imageUrl, postId);
         }).catch((error) => {
-            console.error("Error logging in: ", error);
+            console.error('Error uploading image: ', error);
         });
     } else {
-        alert("Please enter both username and password.");
+        savePost(title, content, tags, null, postId);
     }
 };
 
-// Submit Post
-document.getElementById("submitPost").onclick = function() {
-    const title = document.getElementById("postTitle").value;
-    const content = document.getElementById("postContent").value;
-    const tags = document.getElementById("postTags").value;
-    const postImage = document.getElementById("postImage").files[0];
-
-    const newPostKey = ref(database, 'posts').push().key;
-    
-    const postData = {
+// Function to save post data
+function savePost(title, content, tags, imageUrl, postId) {
+    set(ref(database, 'posts/' + postId), {
         username: currentUsername,
         title: title,
         content: content,
         tags: tags,
-        comments: [],
-        imageUrl: ""
-    };
-
-    if (postImage) {
-        const imageRef = storageRef(storage, `images/${newPostKey}.jpg`);
-        uploadBytes(imageRef, postImage).then(() => {
-            postData.imageUrl = `images/${newPostKey}.jpg`;
-            set(ref(database, 'posts/' + newPostKey), postData).then(() => {
-                loadPosts();
-            });
-        }).catch((error) => {
-            console.error("Error uploading image: ", error);
-        });
-    } else {
-        set(ref(database, 'posts/' + newPostKey), postData).then(() => {
-            loadPosts();
-        });
-    }
-};
-
-// Load Posts
-function loadPosts() {
-    get(child(ref(database), 'posts')).then((snapshot) => {
-        const postsList = document.getElementById("postList");
-        postsList.innerHTML = ""; // Clear previous posts
-        if (snapshot.exists()) {
-            snapshot.forEach((childSnapshot) => {
-                const post = childSnapshot.val();
-                const li = document.createElement("li");
-                li.innerHTML = `<strong>${post.username}</strong>: ${post.title}<br>${post.content}<br>${post.tags}`;
-                if (post.imageUrl) {
-                    li.innerHTML += `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100px;"/>`;
-                }
-                postsList.appendChild(li);
-            });
-        } else {
-            postsList.innerHTML = "No posts available.";
-        }
+        imageUrl: imageUrl,
+        comments: []
+    }).then(() => {
+        loadPosts();
+        document.getElementById('postTitle').value = '';
+        document.getElementById('postContent').value = '';
+        document.getElementById('postTags').value = '';
+        document.getElementById('postImage').value = '';
     }).catch((error) => {
-        console.error("Error loading posts: ", error);
+        console.error('Error saving post: ', error);
     });
 }
 
-// Logout Functionality
-document.getElementById("logoutButton").onclick = function() {
-    currentUsername = "";
-    document.getElementById("userSection").style.display = 'block';
-    document.getElementById("postForm").style.display = 'none';
+// Load posts from the database
+function loadPosts() {
+    onValue(ref(database, 'posts'), (snapshot) => {
+        const posts = snapshot.val();
+        const postList = document.getElementById('postList');
+        postList.innerHTML = '';
+
+        for (const postId in posts) {
+            const post = posts[postId];
+            const postElement = document.createElement('li');
+            postElement.className = 'post';
+            postElement.innerHTML = `
+                <h3>${post.title}</h3>
+                <p>${post.content}</p>
+                <p><strong>Tags:</strong> ${post.tags}</p>
+                ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%;">` : ''}
+                <p><strong>Posted by:</strong> ${post.username}</p>
+                <div class="comments">
+                    <h4>Comments:</h4>
+                    <ul id="comments-${postId}"></ul>
+                    <input type="text" placeholder="Add a comment..." id="commentInput-${postId}">
+                    <button onclick="addComment('${postId}')">Comment</button>
+                </div>
+            `;
+            postList.appendChild(postElement);
+            loadComments(postId);
+        }
+    });
+}
+
+// Load comments for a post
+function loadComments(postId) {
+    onValue(ref(database, `posts/${postId}/comments`), (snapshot) => {
+        const comments = snapshot.val() || [];
+        const commentList = document.getElementById(`comments-${postId}`);
+        commentList.innerHTML = '';
+
+        comments.forEach((comment) => {
+            const commentElement = document.createElement('li');
+            commentElement.className = 'comment';
+            commentElement.textContent = comment;
+            commentList.appendChild(commentElement);
+        });
+    });
+}
+
+// Add a comment to a post
+function addComment(postId) {
+    const commentInput = document.getElementById(`commentInput-${postId}`);
+    const comment = commentInput.value;
+
+    if (comment) {
+        const postCommentsRef = ref(database, `posts/${postId}/comments`);
+        onValue(postCommentsRef, (snapshot) => {
+            const comments = snapshot.val() || [];
+            comments.push(comment);
+
+            set(postCommentsRef, comments).then(() => {
+                commentInput.value = '';
+            }).catch((error) => {
+                console.error('Error adding comment: ', error);
+            });
+        });
+    }
+}
+
+// Logout functionality
+document.getElementById('logoutButton').onclick = () => {
+    currentUsername = null;
+    document.getElementById('userSection').style.display = 'block';
+    document.getElementById('postForm').style.display = 'none';
 };
