@@ -19,13 +19,14 @@
             <input type="text" id="usernameInput" placeholder="Enter a username" required>
             <input type="password" id="passwordInput" placeholder="Enter a password" required>
             <button id="setUsername">Set Username</button>
+            <button id="loginButton">Login</button>
         </div>
         <div id="postForm" style="display:none;">
             <h2>Create a Post</h2>
             <input type="text" id="postTitle" placeholder="Post Title" required>
             <textarea id="postContent" placeholder="Post Content" required></textarea>
             <input type="text" id="postTags" placeholder="Tags">
-            <input type="file" id="postImage" accept="image/*"> <!-- New input for image -->
+            <input type="file" id="postImage" accept="image/*">
             <button id="submitPost">Submit Post</button>
         </div>
 
@@ -34,6 +35,6 @@
             <ul id="postList"></ul>
         </div>
     </main>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
