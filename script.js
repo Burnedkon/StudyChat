@@ -1,8 +1,3 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, child, onValue } from "firebase/database";
-import { getStorage, ref as storageRef, uploadBytes } from "firebase/storage";
-
 // Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyC_Pu9M7JlEyu9ZdwC8vvR_RJpvum6Ob_I",
@@ -15,11 +10,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const storage = getStorage(app);
-
-let currentUsername = null;
+const app = firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const storage = firebase.storage();
 
 // Set username and password
 document.getElementById('setUsername').onclick = () => {
@@ -27,7 +20,7 @@ document.getElementById('setUsername').onclick = () => {
     const password = document.getElementById('passwordInput').value;
 
     if (username && password) {
-        set(ref(database, 'users/' + username), {
+        firebase.database().ref('users/' + username).set({
             password: password
         }).then(() => {
             currentUsername = username;
@@ -45,7 +38,7 @@ document.getElementById('loginButton').onclick = () => {
     const username = document.getElementById('usernameInput').value;
     const password = document.getElementById('passwordInput').value;
 
-    get(child(ref(database), 'users/' + username)).then((snapshot) => {
+    firebase.database().ref('users/' + username).once('value').then((snapshot) => {
         if (snapshot.exists() && snapshot.val().password === password) {
             currentUsername = username;
             document.getElementById('userSection').style.display = 'none';
@@ -69,8 +62,8 @@ document.getElementById('submitPost').onclick = () => {
     const postId = Date.now();
 
     if (imageFile) {
-        const imageRef = storageRef(storage, 'images/' + postId);
-        uploadBytes(imageRef, imageFile).then(() => {
+        const imageRef = firebase.storage().ref('images/' + postId);
+        imageRef.put(imageFile).then(() => {
             const imageUrl = `images/${postId}`;
             savePost(title, content, tags, imageUrl, postId);
         }).catch((error) => {
@@ -83,7 +76,7 @@ document.getElementById('submitPost').onclick = () => {
 
 // Function to save post data
 function savePost(title, content, tags, imageUrl, postId) {
-    set(ref(database, 'posts/' + postId), {
+    firebase.database().ref('posts/' + postId).set({
         username: currentUsername,
         title: title,
         content: content,
@@ -103,7 +96,7 @@ function savePost(title, content, tags, imageUrl, postId) {
 
 // Load posts from the database
 function loadPosts() {
-    onValue(ref(database, 'posts'), (snapshot) => {
+    firebase.database().ref('posts').on('value', (snapshot) => {
         const posts = snapshot.val();
         const postList = document.getElementById('postList');
         postList.innerHTML = '';
@@ -133,7 +126,7 @@ function loadPosts() {
 
 // Load comments for a post
 function loadComments(postId) {
-    onValue(ref(database, `posts/${postId}/comments`), (snapshot) => {
+    firebase.database().ref(`posts/${postId}/comments`).on('value', (snapshot) => {
         const comments = snapshot.val() || [];
         const commentList = document.getElementById(`comments-${postId}`);
         commentList.innerHTML = '';
@@ -153,12 +146,12 @@ function addComment(postId) {
     const comment = commentInput.value;
 
     if (comment) {
-        const postCommentsRef = ref(database, `posts/${postId}/comments`);
-        onValue(postCommentsRef, (snapshot) => {
+        const postCommentsRef = firebase.database().ref(`posts/${postId}/comments`);
+        postCommentsRef.once('value').then((snapshot) => {
             const comments = snapshot.val() || [];
             comments.push(comment);
 
-            set(postCommentsRef, comments).then(() => {
+            postCommentsRef.set(comments).then(() => {
                 commentInput.value = '';
             }).catch((error) => {
                 console.error('Error adding comment: ', error);
