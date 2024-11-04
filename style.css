@@ -1,14 +1,41 @@
 body {
     font-family: Arial, sans-serif;
-    padding: 20px;
+    margin: 0;
+    padding: 0;
     background-color: #f4f4f4;
 }
 
 header {
-    background: #4CAF50;
-    color: white;
+    background: #007bff;
+    color: #fff;
     padding: 10px 0;
     text-align: center;
+}
+
+h1 {
+    margin: 0;
+}
+
+main {
+    padding: 20px;
+}
+
+input[type="text"], input[type="password"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+button {
+    padding: 10px 20px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
 }
 
 #postList {
@@ -16,44 +43,20 @@ header {
     padding: 0;
 }
 
-#postList li {
+.post {
     background: #fff;
     margin: 10px 0;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.profile-picture {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.post-image {
-    max-width: 100%;
-    height: auto;
-    display: block;
+.comments {
     margin-top: 10px;
 }
 
-.commentSection {
-    margin-top: 10px;
-}
-
-.commentInput {
-    width: calc(100% - 80px);
-}
-
-.commentButton {
-    margin-left: 5px;
-}
-
-.floating-credit {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    color: #4CAF50;
-    font-weight: bold;
+.comment {
+    margin-top: 5px;
+    padding: 5px;
+    background: #e9ecef;
+    border-radius: 3px;
 }
