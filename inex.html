@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyChat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>StudyChat</h1>
+        <nav>
+            <button id="logoutButton" style="display:none;">Logout</button>
+        </nav>
+    </header>
+    <main>
+        <div id="userSection">
+            <h2>Choose a Username</h2>
+            <input type="text" id="usernameInput" placeholder="Enter a username" required>
+            <input type="password" id="passwordInput" placeholder="Enter a password" required>
+            <button id="setUsername">Set Username</button>
+        </div>
+        <div id="postForm" style="display:none;">
+            <h2>Create a Post</h2>
+            <input type="text" id="postTitle" placeholder="Post Title" required>
+            <textarea id="postContent" placeholder="Post Content" required></textarea>
+            <input type="text" id="postTags" placeholder="Tags">
+            <input type="file" id="postImage" accept="image/*"> <!-- New input for image -->
+            <button id="submitPost">Submit Post</button>
+        </div>
+
+        <div id="posts">
+            <h2>Posts</h2>
+            <ul id="postList"></ul>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
